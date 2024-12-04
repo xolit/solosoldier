@@ -1,0 +1,16 @@
+{
+  "name": "solosoldiergame",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "AbdulBasit",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.1",
+    "kaboom": "^3000.1.17",
+    "socket.io": "^4.8.1"
+  }
+}
