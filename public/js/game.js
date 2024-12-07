@@ -112,7 +112,7 @@ function applyGravity() {
         const player = players[id];
         if (player.y < 500 && player.alive) { // Fall only if above ground
             player.y += 10; // Simulate gravity
-            io.emit("playerMoved", { id, x: player.x, y: player.y, facing: player.facing });
+            socket.emit("playerMoved", { id, x: player.x, y: player.y, facing: player.facing });
         }
     }
 }
