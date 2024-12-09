@@ -8,18 +8,11 @@ window.addEventListener("DOMContentLoaded", function () {
 
     const bulletImage = new Image();
     bulletImage.src = "/assets/bullet.png";
-     
-    playerImage.onload = () => {
-        console.log("Player image loaded successfully");
-    };
-    playerImage.onerror = () => {
-        console.error("Failed to load player image. Check the path.");
-    };
-    
 
     let players = {};
     let bullets = [];
     let localPlayer = { id: null, alive: true };
+    let gameOverDisplayed = false; // Prevent multiple Game Over screens
 
     // Initialize canvas
     function resizeCanvas() {
@@ -29,7 +22,7 @@ window.addEventListener("DOMContentLoaded", function () {
     window.addEventListener("resize", resizeCanvas);
     resizeCanvas();
 
-    // Handle initial data
+    // Socket.io Event Handlers
     socket.on("currentPlayers", (currentPlayers) => {
         players = currentPlayers;
         localPlayer.id = socket.id;
@@ -39,7 +32,6 @@ window.addEventListener("DOMContentLoaded", function () {
         bullets = currentBullets;
     });
 
-    // Update player position
     socket.on("playerMoved", (data) => {
         if (players[data.id]) {
             players[data.id].x = data.x;
@@ -48,53 +40,53 @@ window.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Add new player
     socket.on("newPlayer", (newPlayer) => {
         players[newPlayer.id] = newPlayer;
     });
 
-    // Handle shooting
     socket.on("bulletFired", (bullet) => {
         bullets.push(bullet);
     });
 
-// Remove dead players and show Game Over screen only when the local player dies
-socket.on("playerDied", (playerId) => {
-    if (players[playerId]) {
-        players[playerId].alive = false;
-    }
+    socket.on("playerDied", (playerId) => {
+        if (players[playerId]) {
+            players[playerId].alive = false;
+        }
 
-    if (playerId === localPlayer.id) {
-        localPlayer.alive = false;
-        showGameOverScreen(); // Show Game Over screen for the local player
-    }
-});
+        if (playerId === localPlayer.id && !gameOverDisplayed) {
+            showGameOverScreen();
+        }
+    });
 
-    // Remove disconnected players
     socket.on("playerDisconnected", (playerId) => {
         delete players[playerId];
     });
 
-    // Reset player on play again
     socket.on("resetPlayer", (player) => {
         players[player.id] = player;
-        localPlayer.alive = true;
+        if (player.id === localPlayer.id) {
+            localPlayer.alive = true;
+            hideGameOverScreen();
+        }
     });
 
-    // Game Over screen
-function showGameOverScreen() {
-    const gameOverScreen = document.getElementById("gameOver");
-    if (gameOverScreen.style.display === "none") {
+    // Game Over Screen Functions
+    function showGameOverScreen() {
+        gameOverDisplayed = true;
+        const gameOverScreen = document.getElementById("gameOver");
         gameOverScreen.style.display = "flex";
     }
-}
 
+    function hideGameOverScreen() {
+        gameOverDisplayed = false;
+        const gameOverScreen = document.getElementById("gameOver");
+        gameOverScreen.style.display = "none";
+    }
 
-    // Restart game
+    // "Play Again" Button Handler
     document.getElementById("playAgain").addEventListener("click", () => {
-        location.reload(); // Reload the page to reset the game
+        socket.emit("resetPlayer", { id: localPlayer.id });
     });
-    
 
     // Controls
     document.getElementById("left").addEventListener("click", () => {
@@ -105,21 +97,6 @@ function showGameOverScreen() {
     });
     document.getElementById("jump").addEventListener("click", () => {
         socket.emit("move", { direction: "jump" });
-        
-        // Apply gravity simulation to ensure the player falls back to the ground
-function applyGravity() {
-    for (let id in players) {
-        const player = players[id];
-        if (player.y < 500 && player.alive) { // Fall only if above ground
-            player.y += 10; // Simulate gravity
-            socket.emit("playerMoved", { id, x: player.x, y: player.y, facing: player.facing });
-        }
-    }
-}
-
-// Run gravity simulation at intervals
-setInterval(applyGravity, 50);
-
     });
     document.getElementById("shoot").addEventListener("click", () => {
         const player = players[socket.id];
@@ -135,7 +112,18 @@ setInterval(applyGravity, 50);
         }
     });
 
-    // Render loop
+    // Gravity Simulation
+    function applyGravity() {
+        const player = players[localPlayer.id];
+        if (player && player.y < canvas.height - 100 && player.alive) {
+            player.y += 5; // Simulate gravity
+            socket.emit("playerMoved", { id: localPlayer.id, x: player.x, y: player.y, facing: player.facing });
+        }
+    }
+
+    setInterval(applyGravity, 50);
+
+    // Render Loop
     function render() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -143,25 +131,33 @@ setInterval(applyGravity, 50);
         ctx.fillStyle = "#8B4513";
         ctx.fillRect(0, canvas.height - 100, canvas.width, 100);
 
-    // Draw players
-    for (let id in players) {
-        const player = players[id];
-        if (player.alive) {
-            ctx.drawImage(playerImage, player.x, player.y - 50, 50, 50);
+        // Draw players
+        for (let id in players) {
+            const player = players[id];
+            if (player.alive) {
+                ctx.drawImage(playerImage, player.x, player.y - 50, 50, 50);
+            } else {
+                ctx.fillStyle = "gray";
+                ctx.fillRect(player.x, player.y - 50, 50, 50); // Gray box for dead players
+            }
         }
-    }
 
-          // Draw bullets
-    bullets.forEach((bullet) => {
-        ctx.drawImage(bulletImage, bullet.x, bullet.y, 20, 10);
-        bullet.x += bullet.direction === "right" ? 10 : -10;
-    });
-        
-        
+        // Draw bullets and remove off-screen bullets
+        bullets = bullets.filter((bullet) => {
+            const onScreen = bullet.x >= 0 && bullet.x <= canvas.width;
+            if (onScreen) {
+                ctx.drawImage(bulletImage, bullet.x, bullet.y, 20, 10);
+                bullet.x += bullet.direction === "right" ? 10 : -10;
+            }
+            return onScreen;
+        });
 
-        socket.emit("checkCollision"); // Notify the server to check for collisions       
-        requestAnimationFrame(render);
+        socket.emit("checkCollision"); // Notify the server to check for collisions
+        if (localPlayer.alive) {
+            requestAnimationFrame(render);
+        }
     }
 
     render();
 });
+                
