@@ -9,6 +9,11 @@ const io = socketIo(server);
 const PORT = 3000;
 
 app.use(express.static("public"));
+
+app.get("/game", (req, res) =>{
+    res.sendFile(__dirname + "/public/game.html");
+});
+
 let players = {};
 let bullets = [];
 
