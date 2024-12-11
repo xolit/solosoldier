@@ -1,76 +1,89 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solo Soldier Online multiplayer Game</title>
-    <style>
-        body {
+<html>
+   <head>
+      <title>• Home Page</title>
+      <style>
+         body {
+            background-color: black;
+            font-family: Arial, sans-serif;
             margin: 0;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100vh;
-            background-color: #1e1e2f; /* Dark background for contrast */
+            padding: 0;
+           display: flex;
+           justify-content: center;
+           align-items: center;
+           flex-direction: column;
+         }
+         #background {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+         }
+         a {
+            color: #333;
+            font-size: 26px;
+            margin-bottom: 20px;
+          text-decoration: none;
         }
-
-        canvas {
-            display: block;
-            border: 3px solid #ffffff; /* White border for visibility */
-            border-radius: 10px; /* Rounded corners */
-            max-width: 90%;
-            max-height: 75%;
-            aspect-ratio: 16 / 9; /* Aspect ratio for better appearance */
-        }
-
-        .controls {
-            margin-top: 10px;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-        }
-
-        button {
-            padding: 15px 25px;
+         #copyR {
+            margin-top: 25px;
+            color: #666;
+            font-size: 11px;
+           margin-bottom: 30px;
+           font-wight: thin;
+         }
+         #version {
+            margin-top: 50px;
+            color: #666;
+            font-size: 9px;
+           font-wight: thin;
+         }
+         #button {
+            margin-top: 50px;
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 2px;
             font-size: 18px;
-            font-weight: bold;
-            color: #ffffff;
-            background-color: #3a86ff;
-            border: 2px solid #1f58cc;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        button:hover {
-            background-color: #1f58cc;
-            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.5);
-            transform: translateY(-3px);
-        }
-
-        button:active {
-            background-color: #154a96;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
-            transform: translateY(1px);
-        }
-    </style>
-</head>
-<body>
-    <canvas id="gameCanvas"></canvas>
-    <div class="controls">
-        <button id="left">Left</button>
-        <button id="right">Right</button>
-        <button id="jump">Jump</button>
-        <button id="shoot">Shoot</button>
-    </div>
-    <div id="gameOver" style="display: none; position: fixed; width: 100%; height: 100%; background: rgba(0,0,0,0.8); color: white; justify-content: center; align-items: center; flex-direction: column;">
-    <h1>Game Over</h1>
-    <button id="playAgain" style="padding: 10px 20px; font-size: 20px;">Play Again</button>
-    </div>
+            transition: background-color 0.3s ease;
+         }
+         .button:hover {
+            background-color: #45a049;
+         }
+      </style>   
+   </head>
+   <body>
+      <div id="background">
+        <a onclick="go()" id="button"
+          >Start Game</a>
+      </div>
+      <h5 id="copyR">
+         ©Copyrighted By @AbdulBasit 
+      </h5>
+      <div id="socials">
+  <a href="https://www.instagram.com/xolit_edits?igsh=a3p6c2QxdWNhOTBh">Instagram 
+  </a> <br /> <br />
+  <a href="https://www.facebook.com/profile.php?id=100072954586608">Facebook</a> <br /> <br />
+  <a href="https://youtube.com/@dev_looper?si=uKeMvQiEQ_2Bs2DV">YouTube</a> <br /> <br />
+      </div>
+      <div id="version">
+         1.0.1
+      </div>
+      
+      
+   </body>
+  <script>
+    // Declare the function outside the script tag to make it globally accessible
+    function go(){
+  setTimeout(function(){
+          location.href = "/game";
+  },4050);
+ 
+      let button = document.getElementById("button");
+      button.innerHTML = "matching..."; // Use innerHTML instead
+      button.style.backgroundColor = "grey";
     
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="js/game.js"></script>
-</body>
+    }  
+  </script>
 </html>
